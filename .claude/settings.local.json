@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(supabase --version:*)",
+      "Bash(docker --version:*)",
+      "Bash(deno --version:*)",
+      "Bash(./verify.sh:*)",
+      "Bash(bash:*)",
+      "Bash(sw_vers:*)",
+      "Bash(brew:*)",
+      "Bash(./start-local.sh:*)",
+      "Bash(docker info:*)",
+      "Bash(pkill -f \"brew install.*docker\")",
+      "Bash(supabase status:*)",
+      "Bash(supabase projects list:*)",
+      "Bash(supabase login:*)",
+      "Bash(supabase link:*)",
+      "Bash(open:*)",
+      "Read(//Users/tgmoon/github/**)"
+    ]
+  }
+}
