@@ -13,8 +13,8 @@
 
 | 层级 | 技术 |
 |----|----|
-| 前端 | SwiftUI（声明式 UI） |
-| 后端 | Supabase（ADB Supabase） |
+| 前端 | SwiftUI (iOS)、Jetpack Compose (Android) |
+| 后端 | Supabase（BaaS） |
 | 认证 | Anonymous Auth |
 | 数据 | PostgreSQL + RLS |
 | 服务端逻辑 | Supabase Edge Functions |
@@ -52,16 +52,29 @@ died-or-not-scaffold/
 │       └── send-notification-email/
 │           ├── index.ts        # 发送通知
 │           └── deno.json       # Deno 配置
-└── ios/
-    └── DiedOrNot/
-        ├── Package.swift        # Swift Package 配置
-        ├── Config.swift         # 应用配置
-        ├── App/
-        │   └── DiedOrNotApp.swift
-        ├── Services/
-        │   └── SupabaseManager.swift  # Supabase 客户端管理
-        └── Views/
-            └── CheckInView.swift
+├── ios/
+│   └── DiedOrNot/
+│       ├── Package.swift        # Swift Package 配置
+│       ├── Config.swift         # 应用配置
+│       ├── App/
+│       │   └── DiedOrNotApp.swift
+│       ├── Services/
+│       │   └── SupabaseManager.swift  # Supabase 客户端管理
+│       └── Views/
+│           └── CheckInView.swift
+└── android/
+    └── app/src/main/java/com/diedornot/app/
+        ├── MainActivity.kt      # 应用入口
+        ├── data/
+        │   ├── SupabaseClient.kt       # Supabase 客户端
+        │   ├── AuthService.kt          # 认证服务
+        │   └── CheckInRepository.kt    # 签到数据操作
+        ├── model/
+        │   ├── UserProfile.kt          # 用户模型
+        │   └── CheckIn.kt              # 签到模型
+        └── ui/
+            ├── CheckInScreen.kt        # 主界面 (Compose)
+            └── CheckInViewModel.kt     # 状态管理
 ```
 
 ---
@@ -146,14 +159,29 @@ cp .env.example .env
 # 编辑 .env 文件，填入 supabase start 输出的本地凭证
 ```
 
-#### 4. 运行 iOS 应用
+#### 4. 运行客户端应用
 
+**iOS:**
 ```bash
 # 使用 Xcode 打开项目
 open ios/DiedOrNot
 
 # 在 Config.swift 中配置本地 URL
 # 然后在 Xcode 中 Run
+```
+
+**Android:**
+```bash
+# 配置 Supabase 凭证
+# 编辑 android/gradle.properties，填入本地凭证
+
+# 使用 Android Studio 打开
+open android/
+
+# 或使用命令行构建
+cd android
+./gradlew build
+./gradlew installDebug
 ```
 
 ---
@@ -181,9 +209,11 @@ supabase link --project-ref <你的项目ID>
 
 在 Supabase SQL Editor 中执行 `supabase/setup-cron.sql`（替换项目 URL 和密钥）
 
-#### 4. 配置 iOS 应用
+#### 4. 配置客户端应用
 
-在 [Config.swift](ios/DiedOrNot/Config.swift) 中填入你的 Supabase URL 和 API Key
+**iOS:** 在 [Config.swift](ios/DiedOrNot/Config.swift) 中填入你的 Supabase URL 和 API Key
+
+**Android:** 在 [android/gradle.properties](android/gradle.properties) 中填入你的 Supabase URL 和 API Key
 
 ---
 
@@ -191,24 +221,44 @@ supabase link --project-ref <你的项目ID>
 
 - [部署指南](DEPLOYMENT.md) - 完整的生产环境部署说明
 - [测试指南](TESTING.md) - 各项功能的测试方法
+- [Android 设置指南](ANDROID_SETUP.md) - Android 客户端详细说明
+- [AI 开发指南](CLAUDE.md) - AI 辅助开发最佳实践
 
 ---
 
 ## 五、核心功能实现
 
-### 1. iOS 应用
+### 1. 客户端应用
 
-#### SupabaseManager（服务层）
+#### iOS (SwiftUI)
+**SupabaseManager（服务层）**
 - 自动匿名登录
 - 创建用户记录
 - 签到功能（防重复）
 - 查询签到状态
 
-#### CheckInView（视图层）
+**CheckInView（视图层）**
 - 响应式 UI
 - 加载状态管理
 - 错误处理和展示
 - 用户 ID 显示
+
+#### Android (Jetpack Compose)
+**数据层**
+- `SupabaseClient`: Supabase 客户端单例
+- `AuthService`: 匿名认证服务
+- `CheckInRepository`: 签到数据操作
+
+**UI 层**
+- `CheckInScreen`: 主界面 (Compose 声明式 UI)
+- `CheckInViewModel`: 状态管理 + 业务逻辑
+- Material 3 设计系统
+
+**设计对齐**
+- Android ≈ iOS 架构
+- Compose ≈ SwiftUI (声明式)
+- ViewModel ≈ @StateObject (状态管理)
+- 共享同一个 Supabase 后端
 
 ### 2. Edge Functions
 

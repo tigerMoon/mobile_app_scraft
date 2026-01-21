@@ -16,7 +16,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | SwiftUI (iOS) |
+| Frontend | SwiftUI (iOS), Jetpack Compose (Android) |
 | Backend | Supabase (BaaS) |
 | Auth | Anonymous Auth |
 | Database | PostgreSQL + Row Level Security (RLS) |
@@ -65,6 +65,21 @@ open ios/DiedOrNot
 ```
 
 In Xcode, configure Supabase credentials before running the app.
+
+### Android Development
+```bash
+# Open Android project in Android Studio
+open android/
+
+# Or build from command line
+cd android
+./gradlew build
+
+# Install on connected device
+./gradlew installDebug
+```
+
+Configure Supabase credentials in `android/gradle.properties` before running the app.
 
 ## Architecture Details
 
@@ -131,6 +146,33 @@ using (auth.uid() = user_id);
 - Needs Supabase client integration for real functionality
 - Should call Supabase API to insert check-in records
 
+### Android App Structure
+
+The Android app mirrors the iOS architecture using Kotlin and Jetpack Compose:
+
+```
+android/app/src/main/java/com/diedornot/app/
+├── MainActivity.kt              # App entry point
+├── data/
+│   ├── SupabaseClient.kt       # Supabase singleton (mirrors iOS SupabaseManager)
+│   ├── AuthService.kt          # Anonymous authentication
+│   └── CheckInRepository.kt    # Check-in data operations
+├── model/
+│   ├── UserProfile.kt          # User model (maps to 'users' table)
+│   └── CheckIn.kt              # Check-in model (maps to 'check_ins' table)
+└── ui/
+    ├── CheckInScreen.kt        # Main UI (Jetpack Compose, mirrors iOS CheckInView)
+    ├── CheckInViewModel.kt     # State management
+    └── theme/                  # Material 3 theming
+```
+
+**Key Design Parallels with iOS**:
+- `SupabaseClient.kt` ≈ iOS `SupabaseManager.swift`
+- `CheckInScreen.kt` (Compose) ≈ iOS `CheckInView.swift` (SwiftUI)
+- `CheckInViewModel` ≈ iOS `@StateObject` pattern
+- Both use declarative UI (Compose ≈ SwiftUI)
+- Both use same Supabase backend (zero backend changes needed)
+
 ## Key Design Patterns
 
 ### Security Through Database Constraints
@@ -147,10 +189,11 @@ Edge Functions are deliberately simple and deterministic:
 - Reduces context needed for AI code generation
 
 ### Declarative UI
-SwiftUI's declarative syntax aligns with AI code generation:
-- State-driven UI updates
-- Minimal imperative logic
-- Clear component boundaries
+Both iOS and Android use declarative UI frameworks that align with AI code generation:
+- **iOS**: SwiftUI
+- **Android**: Jetpack Compose
+- Both: State-driven UI updates, minimal imperative logic, clear component boundaries
+- This consistency across platforms reduces cognitive load and simplifies maintenance
 
 ## Development Guidelines
 
@@ -173,6 +216,13 @@ SwiftUI's declarative syntax aligns with AI code generation:
 3. Handle authentication state properly
 4. Leverage SwiftUI's state management (@State, @StateObject)
 
+### When Modifying Android Views
+1. Use Jetpack Compose for declarative UI
+2. Use Kotlin coroutines for async operations (Supabase calls)
+3. Manage state with ViewModel + StateFlow
+4. Follow Material 3 design guidelines
+5. Keep UI logic parallel to iOS implementation
+
 ## Configuration Files
 
 - `supabase/config.toml`: Local Supabase development configuration
@@ -183,6 +233,10 @@ SwiftUI's declarative syntax aligns with AI code generation:
 
 - `.env.example`: Template for required environment variables
   - Copy to `.env` and fill in actual Supabase credentials
+
+- `android/gradle.properties`: Android-specific Supabase configuration
+  - Set `SUPABASE_URL` and `SUPABASE_ANON_KEY`
+  - These are loaded as BuildConfig fields at compile time
 
 ## Testing Strategy
 
@@ -219,3 +273,5 @@ curl -i --location --request POST 'http://localhost:54321/functions/v1/<function
 5. **Edge Functions use Deno**: Not Node.js. Use Deno-compatible imports (e.g., `https://esm.sh/...`).
 
 6. **Keep context minimal**: Each component should have clear, limited responsibilities to reduce complexity.
+
+7. **Multi-platform by design**: iOS and Android share the same backend (Supabase). No backend changes needed to support new platforms. Just implement another client following the same patterns.

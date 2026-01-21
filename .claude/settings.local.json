@@ -18,7 +18,8 @@
       "Bash(supabase login:*)",
       "Bash(supabase link:*)",
       "Bash(open:*)",
-      "Read(//Users/tgmoon/github/**)"
+      "Read(//Users/tgmoon/github/**)",
+      "Bash(ssh:*)"
     ]
   }
 }
